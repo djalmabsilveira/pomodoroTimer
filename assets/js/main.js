@@ -1,5 +1,6 @@
-import { timerSettings } from "./timer"
-import { resetControls } from "./controls"
+import { timerSettings } from "./timer.js"
+import { controlsSettings } from "./controls.js"
+import sounds from "./sounds.js"
 
 const playButton = document.querySelector(".playButton")
 const pauseButton = document.querySelector(".pauseButton")
@@ -9,49 +10,53 @@ const soundOnButton = document.querySelector(".soundOnButton")
 const soundOffButton = document.querySelector(".soundOffButton")
 const minutesDisplay = document.querySelector(".minutes")
 const secondsDisplay = document.querySelector(".seconds")
-let setedMinutes
-let setedSeconds
-let timerTimeOut
 
-let timer = timerSettings({ minutesDisplay, secondsDisplay })
+const controls = controlsSettings({
+  playButton,
+  pauseButton,
+  stopButton,
+  setButton,
+})
+
+const timer = timerSettings({
+  minutesDisplay,
+  secondsDisplay,
+  resetControls: controls.reset,
+})
+
+const sound = sounds()
 
 playButton.addEventListener("click", () => {
-  playButton.classList.add("hide")
-  pauseButton.classList.remove("hide")
-  stopButton.classList.remove("hide")
-  setButton.classList.add("hide")
+  controls.play()
   timer.countdown()
+  sound.pressButton()
 })
 
 pauseButton.addEventListener("click", () => {
-  playButton.classList.remove("hide")
-  pauseButton.classList.add("hide")
-  clearTimeout(timerTimeOut)
+  controls.pause()
+  timer.hold()
+  sound.pressButton()
 })
 
 setButton.addEventListener("click", () => {
-  setedMinutes = prompt("Defina o tempo (minutos):") || 0
-  setedSeconds = prompt("Defina o tempo (segundos):") || 0
-  timer.setDisplayTime(
-    setedMinutes === 0 && setedSeconds === 0 ? 15 : setedMinutes,
-    setedSeconds
-  )
+  timer.settedTime()
 })
 
 stopButton.addEventListener("click", () => {
-  resetControls()
-  clearTimeout(timerTimeOut)
-  setedMinutes = setedMinutes != null ? setedMinutes : 15
-  setedSeconds = setedSeconds != null ? setedSeconds : 0
-  timer.setDisplayTime(setedMinutes, setedSeconds)
+  controls.reset()
+  timer.hold()
+  timer.timeCheck()
+  sound.pressButton()
 })
 
 soundOnButton.addEventListener("click", () => {
   soundOnButton.classList.add("hide")
   soundOffButton.classList.remove("hide")
+  sound.bgAudio.pause()
 })
 
 soundOffButton.addEventListener("click", () => {
   soundOffButton.classList.add("hide")
   soundOnButton.classList.remove("hide")
+  sound.bgAudio.play()
 })
